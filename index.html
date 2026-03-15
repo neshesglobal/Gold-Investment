@@ -42,6 +42,8 @@ html, body {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* ── SCROLLBAR ───────────────────────────────────────────── */
@@ -50,7 +52,14 @@ html, body {
 ::-webkit-scrollbar-thumb { background: var(--border-lt); border-radius: 4px; }
 
 /* ── PAGE WRAPPER ────────────────────────────────────────── */
-.page { max-width: 1160px; margin: 0 auto; padding: 32px 24px 48px; }
+.page {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
 
 /* ── TOP BAR ─────────────────────────────────────────────── */
 .topbar {
@@ -160,6 +169,9 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 22px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .card-title {
   font-size: 11px; font-weight: 600;
@@ -525,8 +537,10 @@ input[type=range]::-moz-range-thumb {
 .beat-badge, .risk-badge {
   display: inline-block;
   font-size: 10px; font-weight: 700;
-  padding: 2px 8px; border-radius: 20px;
-  white-space: nowrap;
+  padding: 3px 9px; border-radius: 20px;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
 }
 .beat-badge.yes    { background: var(--green-dim);  color: var(--green); }
 .beat-badge.strong { background: rgba(16,185,129,.2); color: var(--green); }
@@ -536,13 +550,20 @@ input[type=range]::-moz-range-thumb {
 .yield-note { font-size: 12px; color: var(--text-2); margin-top: 10px; line-height: 1.7; }
 
 /* ── YIELD MOBILE CARDS ──────────────────────────────────── */
-.yield-cards-mobile { display: none; }
+.yield-cards-mobile {
+  display: none;
+  width: 100%;
+  box-sizing: border-box;
+}
 .yc-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 12px 12px;
   margin-bottom: 10px;
   background: var(--surface);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .yc-card.yc-ours {
   background: var(--gold-glow);
@@ -554,24 +575,32 @@ input[type=range]::-moz-range-thumb {
   margin-bottom: 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
+  word-break: break-word;
 }
 .yc-name.ours { color: var(--gold); }
+/* Each row: label on top, value below — fully stacked, no side-by-side */
 .yc-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 6px 0;
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 .yc-row:last-child { border-bottom: none; padding-bottom: 0; }
 .yc-lbl {
-  font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.6px;
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
   color: var(--text-3);
-  flex-shrink: 0;
-  min-width: 130px;
+  line-height: 1;
+}
+/* Badges must not overflow */
+.beat-badge, .risk-badge {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* ── RISK TABLE ──────────────────────────────────────────── */
@@ -672,11 +701,15 @@ input[type=range]::-moz-range-thumb {
   /* Swap yield table → mobile cards */
   .yield-table-desktop { display: none; }
   .yield-cards-mobile  { display: block; }
-  /* Yield chart: taller on mobile for readability */
-  #chart-yield { min-height: 260px; }
+  /* Yield chart: full width, reasonable height */
+  #chart-yield { min-height: 240px; width: 100% !important; }
+  /* Outer card containing yield section must not overflow */
+  .card { overflow: hidden; }
+  /* Ensure yield-grid column fills width */
+  .yield-grid > div { width: 100%; min-width: 0; overflow: hidden; }
 }
 @media (max-width: 600px) {
-  .page { padding: 20px 14px 36px; }
+  .page { padding: 16px 12px 32px; }
   .topbar { flex-direction: column; align-items: flex-start; gap: 14px; }
   .live-block { width: 100%; flex-wrap: nowrap; }
   .price-chip { flex: 1; min-width: 0; }
@@ -686,14 +719,16 @@ input[type=range]::-moz-range-thumb {
   .compliance-grid { grid-template-columns: 1fr 1fr; }
   .chart-wrap { height: 170px; }
   .reg-grid { grid-template-columns: 1fr; }
-  /* Make yc-row labels wrap better on very small screens */
-  .yc-lbl { min-width: 110px; }
+  /* Tighten card padding on phone */
+  .card { padding: 14px 12px; }
+  .yc-card { padding: 10px 10px; }
 }
 @media (max-width: 380px) {
+  .page { padding: 12px 10px 28px; }
   .scenario-grid { grid-template-columns: 1fr 1fr; }
   .stat-grid { grid-template-columns: 1fr 1fr; }
-  .yc-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .yc-lbl { min-width: unset; }
+  .card { padding: 12px 10px; }
+  .yc-card { padding: 8px 8px; }
 }
 </style>
 </head>
