@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Neshes Global — Gold Investment Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & TOKENS ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0A0F1A;
+  --surface:    #111827;
+  --surface-2:  #161D2E;
+  --surface-3:  #1C2540;
+  --border:     #1F2D45;
+  --border-lt:  #263350;
+  --gold:       #D4A843;
+  --gold-lt:    #F0C85A;
+  --gold-dim:   #A07C2A;
+  --gold-glow:  rgba(212,168,67,.10);
+  --green:      #10B981;
+  --green-dim:  rgba(16,185,129,.12);
+  --blue:       #3B82F6;
+  --blue-dim:   rgba(59,130,246,.12);
+  --purple:     #8B5CF6;
+  --red:        #F43F5E;
+  --text-1:     #F1F5F9;
+  --text-2:     #94A3B8;
+  --text-3:     #475569;
+  --radius:     14px;
+  --radius-sm:  9px;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-lt); border-radius: 4px; }
+
+/* ── PAGE WRAPPER ────────────────────────────────────────── */
+.page { max-width: 1160px; margin: 0 auto; padding: 32px 24px 48px; }
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand-mark {
+  width: 40px; height: 40px;
+  background: var(--gold-glow);
+  border: 1.5px solid var(--gold);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: -0.5px;
+}
+.brand-text {}
+.brand-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+.brand-sub {
+  font-size: 11px; color: var(--text-2);
+  margin-top: 2px;
+}
+
+/* Live price pill in topbar */
+.live-block {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.price-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 2px;
+  min-width: 130px;
+}
+.chip-lbl {
+  font-size: 10px; font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: .5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: blink 1.8s infinite;
+}
+@keyframes blink {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.3; transform:scale(1.4); }
+}
+.chip-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 17px; font-weight: 600;
+  color: var(--gold-lt);
+  line-height: 1;
+}
+.chip-sub {
+  font-size: 10px; color: var(--text-3);
+}
+.rate-chip {
+  background: var(--gold-glow);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-sm);
+  padding: 8px 18px;
+  text-align: center;
+}
+.rate-chip .rate-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 26px; font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.rate-chip .rate-lbl {
+  font-size: 10px; color: var(--text-2);
+  margin-top: 2px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* ── SECTION LABEL ───────────────────────────────────────── */
+.sec-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+
+/* ── CARD ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+}
+.card-title {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 16px;
+}
+.card-title-gold {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 16px;
+}
+
+/* ── MAIN GRID ───────────────────────────────────────────── */
+.grid-main {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.left-col { display: flex; flex-direction: column; gap: 16px; }
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── SLIDER CARD ─────────────────────────────────────────── */
+.kg-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.kg-number {
+  font-family: 'Sora', sans-serif;
+  font-size: 52px; font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.kg-unit {
+  font-size: 20px; font-weight: 500;
+  color: var(--text-2);
+}
+.kg-meta {
+  display: flex; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;
+}
+.meta-item {}
+.meta-lbl { font-size: 10px; color: var(--text-3); letter-spacing: .5px; margin-bottom: 2px; }
+.meta-val { font-size: 13px; font-weight: 500; color: var(--text-1); }
+
+/* Slider styling */
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none; margin-bottom: 8px; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--gold); cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 2px var(--gold-dim), 0 2px 8px rgba(212,168,67,.4);
+  transition: transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+input[type=range]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--gold); cursor: pointer;
+  border: 3px solid var(--bg);
+}
+.slider-scale {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--text-3);
+}
+
+/* ── STAT GRID ───────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 12px;
+}
+.stat-lbl {
+  font-size: 10px; color: var(--text-3);
+  letter-spacing: .5px;
+  margin-bottom: 6px;
+}
+.stat-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 19px; font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.15;
+}
+.stat-val.gold   { color: var(--gold); }
+.stat-val.green  { color: var(--green); }
+.stat-val.blue   { color: var(--blue); }
+
+/* ── MONTH TABLE ─────────────────────────────────────────── */
+.month-thead {
+  display: grid; grid-template-columns: 1fr 1.3fr 1.3fr;
+  padding: 0 10px 6px;
+  font-size: 10px; font-weight: 600;
+  color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.month-body {
+  max-height: 210px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.month-row {
+  display: grid; grid-template-columns: 1fr 1.3fr 1.3fr;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  transition: background .15s;
+}
+.month-row:hover { background: var(--surface-2); }
+.m-num   { color: var(--text-2); }
+.m-dist  { color: var(--text-1); font-weight: 500; }
+.m-cumul { color: var(--gold); font-weight: 600; }
+
+/* ── SCENARIO GRID ───────────────────────────────────────── */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.scen-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 12px 10px;
+  cursor: pointer;
+  transition: border-color .2s, transform .15s, background .2s;
+}
+.scen-card:hover  { border-color: var(--gold-dim); transform: translateY(-2px); }
+.scen-card.active {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+.scen-kg   {
+  font-family: 'Sora', sans-serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--gold-lt);
+  line-height: 1;
+}
+.scen-usd  { font-size: 10px; color: var(--text-3); margin-top: 3px; }
+.scen-yr   { font-size: 12px; font-weight: 600; color: var(--green); margin-top: 8px; }
+.scen-mo   { font-size: 10px; color: var(--text-2); margin-top: 2px; }
+
+/* ── REINVEST BUTTON ─────────────────────────────────────── */
+.reinvest-btn {
+  width: 100%;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 18px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text-2);
+  transition: border-color .2s, color .2s, background .2s;
+  user-select: none;
+}
+.reinvest-btn:hover { border-color: var(--gold-dim); color: var(--text-1); }
+.reinvest-btn.active {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+.btn-icon { font-size: 18px; transition: transform .35s; }
+.reinvest-btn.active .btn-icon { transform: rotate(180deg); }
+.btn-text { flex: 1; text-align: left; }
+.btn-badge {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+  background: var(--surface-3); color: var(--text-3);
+  transition: background .2s, color .2s;
+}
+.reinvest-btn.active .btn-badge {
+  background: rgba(16,185,129,.2); color: var(--green);
+}
+
+/* ── CHART CARD ──────────────────────────────────────────── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px 14px;
+}
+.chart-hd {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 14px; gap: 8px; flex-wrap: wrap;
+}
+.chart-ttl {
+  font-family: 'Sora', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--text-1);
+}
+.chart-sub {
+  font-size: 11px; color: var(--text-2); margin-top: 2px;
+}
+.chart-wrap { position: relative; height: 190px; }
+
+/* ── PROGRAMME INFO STRIP ────────────────────────────────── */
+.info-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.info-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.info-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.info-lbl {
+  font-size: 10px; color: var(--text-3);
+  letter-spacing: .5px; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.info-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+.info-val.gold { color: var(--gold); }
+
+/* ── COMPLIANCE BADGES ───────────────────────────────────── */
+.compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.badge-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.badge-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.badge-icon.gold   { background: var(--gold-glow);  color: var(--gold); }
+.badge-icon.green  { background: var(--green-dim);  color: var(--green); }
+.badge-icon.blue   { background: var(--blue-dim);   color: var(--blue); }
+.badge-icon.purple { background: rgba(139,92,246,.12); color: var(--purple); }
+.badge-name {
+  font-size: 12px; font-weight: 600; color: var(--text-1);
+}
+.badge-desc {
+  font-size: 10px; color: var(--text-2); line-height: 1.5;
+}
+.badge-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600;
+  color: var(--green);
+  margin-top: 2px;
+}
+.badge-status::before {
+  content: ''; display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+/* ── PARTNER PILLS ───────────────────────────────────────── */
+.partner-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.partner-lbl {
+  font-size: 10px; color: var(--text-3);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.partner-pill {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11px; font-weight: 500; color: var(--text-2);
+}
+
+/* ── YIELD COMPARISON ────────────────────────────────────── */
+.yield-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.yield-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.yield-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+.yield-table thead th {
+  padding: 8px 10px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-3);
+  text-align: left;
+}
+.yield-table thead th:nth-child(2) { text-align: center; }
+.yield-table thead th:nth-child(3),
+.yield-table thead th:nth-child(4),
+.yield-table thead th:nth-child(5) { text-align: left; }
+.yield-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.yield-table tbody tr:hover { background: var(--surface-2); }
+.yield-table tbody tr.highlight-row {
+  background: var(--gold-glow);
+  border-color: var(--gold-dim);
+}
+.yield-table td {
+  padding: 10px 10px;
+  color: var(--text-1);
+  vertical-align: middle;
+}
+.yield-table td:nth-child(2) { text-align: center; }
+.yield-table td:nth-child(3),
+.yield-table td:nth-child(4),
+.yield-table td:nth-child(5) { text-align: left; }
+.asset-name { font-weight: 500; }
+.asset-name.ours { color: var(--gold); font-weight: 700; }
+.yield-val { font-family: 'Sora', sans-serif; font-weight: 600; }
+.yield-val.ours { color: var(--gold); font-size: 14px; }
+.beat-badge, .risk-badge {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  white-space: nowrap;
+}
+.beat-badge.yes    { background: var(--green-dim);  color: var(--green); }
+.beat-badge.strong { background: rgba(16,185,129,.2); color: var(--green); }
+.beat-badge.us     { background: var(--gold-glow);  color: var(--gold);  border: 1px solid var(--gold-dim); }
+.risk-badge.high   { background: rgba(239,68,68,.12); color: #EF4444; }
+.risk-badge.med    { background: rgba(251,191,36,.12); color: #D97706; }
+.yield-note { font-size: 12px; color: var(--text-2); margin-top: 10px; line-height: 1.7; }
+
+/* ── RISK TABLE ──────────────────────────────────────────── */
+.risk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.risk-table thead tr { border-bottom: 1px solid var(--border); }
+.risk-table thead th {
+  padding: 8px 12px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-3); text-align: left;
+}
+.risk-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.risk-table tbody tr:hover { background: var(--surface-2); }
+.risk-table td {
+  padding: 11px 12px;
+  color: var(--text-1);
+  vertical-align: top;
+}
+.risk-factor { font-weight: 600; color: var(--text-1); }
+.risk-level {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  white-space: nowrap;
+}
+.risk-level.low      { background: var(--green-dim); color: var(--green); }
+.risk-level.very-low { background: rgba(16,185,129,.2); color: var(--green); }
+.risk-level.medium   { background: rgba(245,158,11,.12); color: #F59E0B; }
+.risk-mitigant { font-size: 11px; color: var(--text-2); line-height: 1.55; }
+
+/* ── REGULATORY GRID ─────────────────────────────────────── */
+.reg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.reg-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 16px 14px;
+}
+.reg-icon {
+  font-size: 20px;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+.reg-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 5px;
+}
+.reg-body {
+  font-size: 11px; color: var(--text-2);
+  line-height: 1.55;
+}
+.reg-tag {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 10px; font-weight: 600;
+  color: var(--green);
+  background: var(--green-dim);
+  padding: 2px 9px; border-radius: 20px;
+}
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+.footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--text-3);
+  line-height: 1.8;
+}
+
+/* ── DIVIDER ─────────────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── SECTION GAP ─────────────────────────────────────────── */
+.section-gap { margin-bottom: 24px; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 920px) {
+  .grid-main { grid-template-columns: 1fr; }
+  .info-strip { grid-template-columns: repeat(3, 1fr); }
+  .compliance-grid { grid-template-columns: repeat(2, 1fr); }
+  .scenario-grid { grid-template-columns: repeat(2, 1fr); }
+  .yield-grid { grid-template-columns: 1fr; }
+  .reg-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .page { padding: 20px 14px 36px; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .live-block { width: 100%; flex-wrap: nowrap; }
+  .price-chip { flex: 1; min-width: 0; }
+  .rate-chip { min-width: 80px; }
+  .info-strip { grid-template-columns: repeat(2, 1fr); }
+  .kg-number { font-size: 42px; }
+  .compliance-grid { grid-template-columns: 1fr 1fr; }
+  .chart-wrap { height: 170px; }
+  .reg-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) {
+  .scenario-grid { grid-template-columns: 1fr 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── TOP BAR ─────────────────────────────────────────── -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">NG</div>
+      <div class="brand-text">
+        <div class="brand-name">Neshes Global</div>
+        <div class="brand-sub">Gold Investment Calculator — Physical Gold · 9% Fixed p.a.</div>
+      </div>
+    </div>
+    <div class="live-block">
+      <div class="price-chip">
+        <div class="chip-lbl"><span class="live-dot"></span> XAU / Troy Oz</div>
+        <div class="chip-val" id="price-oz">—</div>
+        <div class="chip-sub" id="price-oz-sub">loading…</div>
+      </div>
+      <div class="price-chip">
+        <div class="chip-lbl"><span class="live-dot"></span> XAU / Kilogram</div>
+        <div class="chip-val" id="price-kg">—</div>
+        <div class="chip-sub">32.15 oz per kg</div>
+      </div>
+      <div class="rate-chip">
+        <div class="rate-num">9%</div>
+        <div class="rate-lbl">Fixed p.a.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROGRAMME INFO STRIP ─────────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Programme Overview</div>
+    <div class="info-strip">
+      <div class="info-item">
+        <div class="info-text">
+          <div class="info-lbl">Programme Size</div>
+          <div class="info-val gold">100 kg</div>
+        </div>
+        <div class="info-icon">⚖️</div>
+      </div>
+      <div class="info-item">
+        <div class="info-text">
+          <div class="info-lbl">Min. Ticket</div>
+          <div class="info-val">5 kg</div>
+        </div>
+        <div class="info-icon">🪙</div>
+      </div>
+      <div class="info-item">
+        <div class="info-text">
+          <div class="info-lbl">Fixed Return</div>
+          <div class="info-val gold">9% p.a.</div>
+        </div>
+        <div class="info-icon">📈</div>
+      </div>
+      <div class="info-item">
+        <div class="info-text">
+          <div class="info-lbl">Term</div>
+          <div class="info-val">12 Months</div>
+        </div>
+        <div class="info-icon">📅</div>
+      </div>
+      <div class="info-item">
+        <div class="info-text">
+          <div class="info-lbl">Payout</div>
+          <div class="info-val">Monthly</div>
+        </div>
+        <div class="info-icon">💸</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN GRID ─────────────────────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Return Calculator</div>
+    <div class="grid-main">
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+
+        <!-- SLIDER -->
+        <div class="card">
+          <div class="card-title-gold">Investment Size</div>
+          <div class="kg-hero">
+            <div class="kg-number" id="kg-display">10</div>
+            <div class="kg-unit">kg</div>
+          </div>
+          <div class="kg-meta">
+            <div class="meta-item">
+              <div class="meta-lbl">USD Value</div>
+              <div class="meta-val" id="pi-usd">—</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-lbl">Troy Oz Equivalent</div>
+              <div class="meta-val" id="pi-oz">—</div>
+            </div>
+          </div>
+          <input type="range" id="kg-slider" min="5" max="100" step="5" value="10"/>
+          <div class="slider-scale">
+            <span>5 kg</span><span>25 kg</span><span>50 kg</span><span>75 kg</span><span>100 kg</span>
+          </div>
+        </div>
+
+        <!-- RETURN STATS -->
+        <div class="card">
+          <div class="card-title">Return Summary</div>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-lbl">Monthly Income</div>
+              <div class="stat-val green" id="stat-monthly">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-lbl">Annual Return</div>
+              <div class="stat-val gold" id="stat-annual">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-lbl">Capital Invested</div>
+              <div class="stat-val" id="stat-capital">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-lbl">Total at Maturity</div>
+              <div class="stat-val gold" id="stat-total">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MONTHLY TABLE -->
+        <div class="card">
+          <div class="card-title">12-Month Distribution Schedule</div>
+          <div class="month-thead">
+            <span>Month</span>
+            <span>Distribution</span>
+            <span>Cumulative</span>
+          </div>
+          <div class="month-body" id="month-body"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+
+        <!-- QUICK SCENARIOS -->
+        <div class="card">
+          <div class="card-title">Quick Scenarios</div>
+          <div class="scenario-grid" id="scenario-grid"></div>
+        </div>
+
+        <!-- REINVEST BUTTON -->
+        <button class="reinvest-btn" id="reinvest-btn" onclick="toggleReinvest()">
+          <span class="btn-icon">↻</span>
+          <span class="btn-text">Show Reinvestment Scenario — 3-Year Compounding</span>
+          <span class="btn-badge" id="reinvest-badge">Off</span>
+        </button>
+
+        <!-- REINVEST CHART (hidden) -->
+        <div class="chart-card" id="multiyear-card" style="display:none;">
+          <div class="chart-hd">
+            <div>
+              <div class="chart-ttl">3-Year Compounding</div>
+              <div class="chart-sub">Annual income rolled at each 12-month maturity</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-multiyear"></canvas></div>
+        </div>
+
+        <!-- CUMULATIVE INCOME CHART -->
+        <div class="chart-card">
+          <div class="chart-hd">
+            <div>
+              <div class="chart-ttl">Cumulative Income</div>
+              <div class="chart-sub" id="chart1-sub">Month-by-month distribution build-up</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-cumul"></canvas></div>
+        </div>
+
+        <!-- SCALE CHART -->
+        <div class="chart-card">
+          <div class="chart-hd">
+            <div>
+              <div class="chart-ttl">Returns by Investment Volume</div>
+              <div class="chart-sub">Annual vs. monthly — across all ticket sizes</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-scale"></canvas></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── YIELD COMPARISON ─────────────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Why 9%? — Yield Comparison</div>
+    <div class="card">
+      <div class="yield-grid">
+
+        <!-- TABLE -->
+        <div>
+          <table class="yield-table">
+            <thead>
+              <tr>
+                <th>Asset Class</th>
+                <th>Typical Yield / Return</th>
+                <th>Volatility / Downside Risk</th>
+                <th>Liquidity &amp; Cash Flow</th>
+                <th>Neshes Advantage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight-row">
+                <td><span class="asset-name ours">Neshes Gold Programme</span></td>
+                <td><span class="yield-val ours">9.0% p.a. Fixed</span></td>
+                <td><span class="beat-badge us">✓ None — Fixed Rate</span></td>
+                <td><span class="beat-badge us">✓ Monthly Cash</span></td>
+                <td><span class="beat-badge us">◉ Our Offer</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">S&amp;P 500 — Total Return (3yr avg)</span></td>
+                <td><span class="yield-val">~7%–12% (variable)</span></td>
+                <td><span class="risk-badge high">✗ High — can lose 30–50%</span></td>
+                <td><span class="risk-badge med">~ No fixed income</span></td>
+                <td><span class="beat-badge yes">✓ Risk-Adjusted</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">S&amp;P 500 — Dividends Only</span></td>
+                <td><span class="yield-val">~1.2%</span></td>
+                <td><span class="risk-badge high">✗ High — market-linked</span></td>
+                <td><span class="risk-badge med">~ Quarterly only</span></td>
+                <td><span class="beat-badge strong">✓ Massively</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">Physical Gold (no yield)</span></td>
+                <td><span class="yield-val">0%</span></td>
+                <td><span class="risk-badge med">~ Price volatility</span></td>
+                <td><span class="risk-badge high">✗ No income at all</span></td>
+                <td><span class="beat-badge strong">✓ Massively</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">High-Yield Savings / Money Market</span></td>
+                <td><span class="yield-val">4.0%–5.0%</span></td>
+                <td><span class="beat-badge yes">✓ Low</span></td>
+                <td><span class="beat-badge yes">✓ Liquid</span></td>
+                <td><span class="beat-badge strong">✓ Strongly on Yield</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">Short-Term Treasuries / CDs</span></td>
+                <td><span class="yield-val">3.4%–4.3%</span></td>
+                <td><span class="beat-badge yes">✓ Very Low</span></td>
+                <td><span class="risk-badge med">~ Locked to maturity</span></td>
+                <td><span class="beat-badge strong">✓ Strongly on Yield</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">IG Corporate Bonds / Treasuries</span></td>
+                <td><span class="yield-val">4.2%–5.5%</span></td>
+                <td><span class="risk-badge med">~ Duration / rate risk</span></td>
+                <td><span class="risk-badge med">~ Semi-annual coupons</span></td>
+                <td><span class="beat-badge yes">✓ Yes — + Monthly Flow</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">60/40 Balanced Portfolio</span></td>
+                <td><span class="yield-val">~5%–8% (expected)</span></td>
+                <td><span class="risk-badge med">~ Moderate — correlated</span></td>
+                <td><span class="risk-badge med">~ No fixed distributions</span></td>
+                <td><span class="beat-badge yes">✓ + Certainty of Income</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="yield-note">* Yields shown are approximate current or historical averages. S&amp;P 500 total return is variable, historically negative in down years, and carries no guaranteed income. Neshes 9% p.a. is a contractually fixed return — independent of gold price movements, interest rate cycles, or equity markets. Monthly distributions provide predictable cash flow from Day 1.</div>
+        </div>
+
+        <!-- CHART -->
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:12px;">Yield Comparison — Contractual vs. Variable Returns</div>
+          <div style="position:relative;height:300px;"><canvas id="chart-yield"></canvas></div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text-3);line-height:1.6;">† S&amp;P 500 total return shown at ~9.5% 3-year avg estimate. Actual returns vary: +30% in bull years, −40% in bear years. No guaranteed income. Neshes 9% is fixed and contractual regardless of market conditions.</div>
+          <div style="margin-top:10px;padding:12px 14px;background:var(--gold-glow);border:1px solid var(--gold-dim);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">Why This Comparison Matters</div>
+            <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Even where S&amp;P 500 total return appears comparable on yield, it comes with <strong style="color:#EF4444">high volatility, no guaranteed income, and no monthly cash flow</strong>. This programme delivers a <strong style="color:var(--text-1)">fixed, contractual 9% p.a.</strong> paid monthly — with physical gold as collateral — from Day 1, regardless of market conditions.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REGULATORY COMPLIANCE ─────────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Regulatory Compliance</div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:16px;line-height:1.6;">
+        Neshes Global operates under, and is fully compliant with, all applicable regulatory frameworks governing gold trading, physical commodity handling, and financial transactions in the UAE and applicable international jurisdictions.
+      </div>
+      <div class="reg-grid">
+        <div class="reg-card">
+          <div class="reg-icon">🇦🇪</div>
+          <div class="reg-title">IFZA — UAE Free Zone</div>
+          <div class="reg-body">Both Trading and Holding entities are registered within the International Free Zone Authority (IFZA), UAE. The structure is independently documented under UAE free zone law, ensuring investor-grade legal standing.</div>
+          <span class="reg-tag">Registered</span>
+        </div>
+        <div class="reg-card">
+          <div class="reg-icon">🏛️</div>
+          <div class="reg-title">AML / KYC — FATF Standard</div>
+          <div class="reg-body">Rigorous Anti-Money Laundering and Know-Your-Customer procedures applied to all counterparties — investors, buyers, and upstream suppliers — in line with UAE Central Bank and FATF standards.</div>
+          <span class="reg-tag">Compliant</span>
+        </div>
+        <div class="reg-card">
+          <div class="reg-icon">⛏️</div>
+          <div class="reg-title">Responsible Sourcing (OECD)</div>
+          <div class="reg-body">Full compliance with OECD Due Diligence Guidance for Responsible Supply Chains of Minerals. Gold sourcing is documented against applicable conflict-free and responsible mining frameworks.</div>
+          <span class="reg-tag">Verified</span>
+        </div>
+        <div class="reg-card">
+          <div class="reg-icon">🔬</div>
+          <div class="reg-title">LBMA-Standard Refining</div>
+          <div class="reg-body">All gold is refined through Al Etihad Refinery to standards consistent with London Bullion Market Association (LBMA) Good Delivery requirements, ensuring universal market acceptability.</div>
+          <span class="reg-tag">Certified</span>
+        </div>
+        <div class="reg-card">
+          <div class="reg-icon">📋</div>
+          <div class="reg-title">DMCC Precious Metals Framework</div>
+          <div class="reg-body">Operations are structured to comply with Dubai's DMCC precious metals framework, including traceability, chain-of-custody requirements, and responsible business conduct standards.</div>
+          <span class="reg-tag">Compliant</span>
+        </div>
+        <div class="reg-card">
+          <div class="reg-icon">🔐</div>
+          <div class="reg-title">Ring-Fence Legal Structure</div>
+          <div class="reg-body">The UAE Holding Company holds a first-priority pledge over all investor gold. The Trading Company cannot access pledged gold without prior pledgee consent. Investors rank ahead of all trading creditors.</div>
+          <span class="reg-tag">Documented</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RISK FACTORS & MITIGANTS ───────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Risk Factors &amp; Mitigants</div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:16px;line-height:1.6;">
+        This programme is structured specifically to minimise investor risk at every layer. The following table is provided for disclosure purposes and reflects our active mitigation strategy.
+      </div>
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th style="width:22%">Risk Factor</th>
+            <th style="width:13%">Likelihood</th>
+            <th>Mitigation in Place</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="risk-factor">Gold Price Volatility</div></td>
+            <td><span class="risk-level low">Low</span></td>
+            <td><div class="risk-mitigant">Returns are fixed at 9% p.a., entirely independent of spot price movements. The investor is a secured lender — not a market participant. Gold is the collateral, not the exposure.</div></td>
+          </tr>
+          <tr>
+            <td><div class="risk-factor">Counterparty / Buyer Default</div></td>
+            <td><span class="risk-level low">Low</span></td>
+            <td><div class="risk-mitigant">All buyers are contracted under 12-month forward agreements with prior credit assessments. Physical gold provides a natural settlement backstop — in any default, gold is already vaulted and ring-fenced.</div></td>
+          </tr>
+          <tr>
+            <td><div class="risk-factor">Custody &amp; Theft Risk</div></td>
+            <td><span class="risk-level very-low">Very Low</span></td>
+            <td><div class="risk-mitigant">All gold is held with Brinks in segregated, fully insured allocated storage in UAE. Inventory is independently reconciled. Investors have audit rights over their pledged gold position at all times.</div></td>
+          </tr>
+          <tr>
+            <td><div class="risk-factor">Regulatory &amp; Legal Risk</div></td>
+            <td><span class="risk-level low">Low</span></td>
+            <td><div class="risk-mitigant">Operations structured under IFZA free zone law with full AML/KYC compliance. All legal documentation is prepared by qualified UAE counsel. Investor protection is codified via pledge and loan note agreements.</div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:10px;color:var(--text-3);line-height:1.7;">
+        This section is provided for disclosure purposes only. It does not constitute investment advice. Prospective investors should conduct independent due diligence before committing capital.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMPLIANCE ────────────────────────────────────────── -->
+  <div class="section-gap">
+    <div class="sec-label">Compliance &amp; Structure</div>
+    <div class="compliance-grid">
+      <div class="badge-card">
+        <div class="badge-icon gold">🏛️</div>
+        <div class="badge-name">AML / KYC</div>
+        <div class="badge-desc">Full AML/KYC compliance applied to all investors. Verified documentation required prior to onboarding.</div>
+        <div class="badge-status">Compliant</div>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon green">🇦🇪</div>
+        <div class="badge-name">IFZA / UAE FZ</div>
+        <div class="badge-desc">Structured within IFZA (International Free Zone Authority), UAE. Separate Trading and Holding entities.</div>
+        <div class="badge-status">Registered</div>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon blue">🔒</div>
+        <div class="badge-name">Brinks Secured</div>
+        <div class="badge-desc">All physical gold held in Brinks UAE vaulting facilities. First-priority pledge ring-fenced to investors.</div>
+        <div class="badge-status">Secured</div>
+      </div>
+      <div class="badge-card">
+        <div class="badge-icon purple">✅</div>
+        <div class="badge-name">LBMA Certified</div>
+        <div class="badge-desc">Gold supplied and refined to LBMA Good Delivery standard via Al Etihad Refinery, UAE.</div>
+        <div class="badge-status">Certified</div>
+      </div>
+    </div>
+
+    <!-- Partner row -->
+    <div style="margin-top:12px;">
+      <div class="partner-row">
+        <span class="partner-lbl">Partners</span>
+        <span class="partner-pill">Brinks — Vault &amp; Logistics</span>
+        <span class="partner-pill">Al Etihad Refinery — Refining</span>
+        <span class="partner-pill">IFZA — Regulatory Framework</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <div class="footer">
+    STRICTLY PRIVATE &amp; CONFIDENTIAL — FOR QUALIFIED / SOPHISTICATED INVESTORS ONLY &nbsp;·&nbsp;
+    Live gold prices are fetched from public market APIs and may be slightly delayed. All return figures are illustrative, based on a fixed 9% per annum return paid monthly. Returns are independent of gold price movements during the term. Principal returned in full at end of 12-month term. This calculator does not constitute investment advice or an offer of securities.
+    &nbsp;·&nbsp; Neshes Global &nbsp;·&nbsp; India &nbsp;·&nbsp; United Kingdom &nbsp;·&nbsp; UAE
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ── CONFIG ─────────────────────────────────────────────── */
+const RATE      = 0.09;
+const OZ_PER_KG = 32.1507;
+const SCENARIOS = [5, 10, 20, 50];
+const FALLBACK  = 5064;
+
+let spotOz = null;
+let spotKg = null;
+let reinvestOn = false;
+
+/* ── GOLD PRICE FETCH ───────────────────────────────────── */
+async function tryMetalsLive() {
+  const r = await fetch('https://api.metals.live/v1/spot/gold', { signal: AbortSignal.timeout(4000) });
+  if (!r.ok) throw 0;
+  const d = await r.json();
+  if (Array.isArray(d) && d[0]?.gold) return parseFloat(d[0].gold);
+  throw 0;
+}
+async function tryExchangeRate() {
+  const r = await fetch('https://api.exchangerate-api.com/v4/latest/XAU', { signal: AbortSignal.timeout(4000) });
+  if (!r.ok) throw 0;
+  const d = await r.json();
+  if (d.rates?.USD) return parseFloat(d.rates.USD);
+  throw 0;
+}
+async function loadPrice() {
+  const $oz  = document.getElementById('price-oz');
+  const $sub = document.getElementById('price-oz-sub');
+  const $kg  = document.getElementById('price-kg');
+  $oz.textContent = '…'; $kg.textContent = '…';
+
+  let oz = FALLBACK;
+  for (const fn of [tryMetalsLive, tryExchangeRate]) {
+    try { const p = await fn(); if (p > 1000) { oz = p; break; } } catch(e) {}
+  }
+
+  spotOz = oz;
+  spotKg = oz * OZ_PER_KG;
+
+  $oz.textContent  = '$' + oz.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  $sub.textContent = 'USD / troy oz · live';
+  $kg.textContent  = '$' + Math.round(spotKg).toLocaleString('en-US');
+
+  update(parseInt(document.getElementById('kg-slider').value));
+}
+
+/* ── HELPERS ────────────────────────────────────────────── */
+function spot()  { return spotKg || (FALLBACK * OZ_PER_KG); }
+function mo(kg)  { return (kg * spot() * RATE) / 12; }
+function yr(kg)  { return kg * spot() * RATE; }
+function cap(kg) { return kg * spot(); }
+
+function fmt(n) {
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+function fmtFull(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+/* ── CHART SETUP ────────────────────────────────────────── */
+Chart.defaults.color      = '#475569';
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.borderColor = '#1F2D45';
+
+const palette = {
+  gold:    '#D4A843',
+  goldFill:'rgba(212,168,67,.12)',
+  green:   '#10B981',
+  greenFill:'rgba(16,185,129,.10)',
+  border:  '#1F2D45',
+  tooltip: '#0A0F1A',
+};
+
+let chartCumul, chartScale, chartMultiyear;
+
+function mkTooltip(borderColor) {
+  return {
+    backgroundColor: palette.tooltip,
+    borderColor,
+    borderWidth: 1,
+    padding: 10,
+    titleColor: '#94A3B8',
+    bodyColor: '#F1F5F9',
+    cornerRadius: 8,
+  };
+}
+
+function initCharts() {
+  // 1. Cumulative line
+  chartCumul = new Chart(
+    document.getElementById('chart-cumul').getContext('2d'), {
+    type: 'line',
+    data: { labels: [], datasets: [{
+      label: 'Cumulative Income',
+      data: [],
+      borderColor: palette.gold,
+      backgroundColor: palette.goldFill,
+      borderWidth: 2,
+      tension: 0.4, fill: true,
+      pointBackgroundColor: palette.gold,
+      pointRadius: 3, pointHoverRadius: 7,
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...mkTooltip(palette.gold),
+          callbacks: { label: c => '  ' + fmtFull(c.parsed.y) }
+        }
+      },
+      scales: {
+        x: { grid: { color: palette.border }, ticks: { font: { size: 10 } } },
+        y: { grid: { color: palette.border }, ticks: { font: { size: 9 }, callback: v => fmt(v) } }
+      }
+    }
+  });
+
+  // 2. Scale bar
+  const vols = [5, 10, 15, 20, 30, 40, 50, 75, 100];
+  chartScale = new Chart(
+    document.getElementById('chart-scale').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: vols.map(k => k + ' kg'),
+      datasets: [
+        { label: 'Annual Return',        data: vols.map(k => yr(k)),  backgroundColor: palette.gold + 'AA', borderColor: palette.gold,  borderWidth: 1, borderRadius: 5 },
+        { label: 'Monthly Distribution', data: vols.map(k => mo(k)),  backgroundColor: palette.green + '77', borderColor: palette.green, borderWidth: 1, borderRadius: 5 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 14, color: '#94A3B8' } },
+        tooltip: { ...mkTooltip(palette.gold),
+          callbacks: { label: c => '  ' + c.dataset.label + ': ' + fmtFull(c.parsed.y) }
+        }
+      },
+      scales: {
+        x: { grid: { color: palette.border }, ticks: { font: { size: 9 } } },
+        y: { grid: { color: palette.border }, ticks: { font: { size: 9 }, callback: v => fmt(v) } }
+      }
+    }
+  });
+
+  // 3. Multi-year bar
+  chartMultiyear = new Chart(
+    document.getElementById('chart-multiyear').getContext('2d'), {
+    type: 'bar',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 350 },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 14, color: '#94A3B8' } },
+        tooltip: { ...mkTooltip(palette.gold),
+          callbacks: { label: c => '  ' + c.dataset.label + ': ' + fmtFull(c.parsed.y) }
+        }
+      },
+      scales: {
+        x: { grid: { color: palette.border } },
+        y: { grid: { color: palette.border }, ticks: { font: { size: 9 }, callback: v => fmt(v) } }
+      }
+    }
+  });
+}
+
+/* ── UPDATE FUNCTIONS ───────────────────────────────────── */
+function updateCumul(kg) {
+  const m = mo(kg);
+  const labels = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'];
+  chartCumul.data.labels           = labels;
+  chartCumul.data.datasets[0].data = labels.map((_,i) => Math.round(m * (i+1)));
+  chartCumul.update();
+}
+
+function updateScale() {
+  const vols = [5, 10, 15, 20, 30, 40, 50, 75, 100];
+  chartScale.data.datasets[0].data = vols.map(k => yr(k));
+  chartScale.data.datasets[1].data = vols.map(k => mo(k));
+  chartScale.update('none');
+}
+
+function highlightBar(kg) {
+  const vols = [5, 10, 15, 20, 30, 40, 50, 75, 100];
+  const cl   = vols.reduce((a,b) => Math.abs(b-kg) < Math.abs(a-kg) ? b : a);
+  const idx  = vols.indexOf(cl);
+  chartScale.data.datasets[0].backgroundColor = vols.map((_,i) => i===idx ? palette.gold : palette.gold+'44');
+  chartScale.data.datasets[1].backgroundColor = vols.map((_,i) => i===idx ? palette.green : palette.green+'33');
+  chartScale.update('none');
+}
+
+function updateMultiyear(kg) {
+  const a = yr(kg);
+  chartMultiyear.data.labels = ['Year 1', 'Year 2', 'Year 3'];
+  chartMultiyear.data.datasets = [
+    { label: 'Annual Income',     data: [a, a, a],       backgroundColor: palette.gold + 'CC', borderColor: palette.gold,  borderWidth: 1, borderRadius: 5 },
+    { label: 'Cumulative Income', data: [a, a*2, a*3],   backgroundColor: palette.green + '88', borderColor: palette.green, borderWidth: 1, borderRadius: 5 },
+  ];
+  chartMultiyear.update();
+}
+
+function updateMonthTable(kg) {
+  const m    = mo(kg);
+  const body = document.getElementById('month-body');
+  body.innerHTML = '';
+  for (let i = 1; i <= 12; i++) {
+    const r = document.createElement('div');
+    r.className = 'month-row';
+    r.innerHTML = `
+      <span class="m-num">Month ${i}</span>
+      <span class="m-dist">${fmtFull(m)}</span>
+      <span class="m-cumul">${fmtFull(m * i)}</span>
+    `;
+    body.appendChild(r);
+  }
+}
+
+function updateStats(kg) {
+  const s = spot();
+  document.getElementById('kg-display').textContent = kg;
+  document.getElementById('pi-usd').textContent     = fmtFull(cap(kg));
+  document.getElementById('pi-oz').textContent      = (kg * OZ_PER_KG).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' oz';
+  document.getElementById('stat-monthly').textContent = fmtFull(mo(kg));
+  document.getElementById('stat-annual').textContent  = fmtFull(yr(kg));
+  document.getElementById('stat-capital').textContent = fmtFull(cap(kg));
+  document.getElementById('stat-total').textContent   = fmtFull(cap(kg) + yr(kg));
+}
+
+function updateScenarios(activeKg) {
+  const g = document.getElementById('scenario-grid');
+  g.innerHTML = '';
+  SCENARIOS.forEach(kg => {
+    const d = document.createElement('div');
+    d.className = 'scen-card' + (kg === activeKg ? ' active' : '');
+    d.innerHTML = `
+      <div class="scen-kg">${kg} kg</div>
+      <div class="scen-usd">${fmt(cap(kg))}</div>
+      <div class="scen-yr">${fmt(yr(kg))} / yr</div>
+      <div class="scen-mo">${fmt(mo(kg))} / mo</div>
+    `;
+    d.addEventListener('click', () => {
+      document.getElementById('kg-slider').value = kg;
+      update(kg);
+    });
+    g.appendChild(d);
+  });
+}
+
+/* ── REINVEST TOGGLE ────────────────────────────────────── */
+function toggleReinvest() {
+  reinvestOn = !reinvestOn;
+  const btn   = document.getElementById('reinvest-btn');
+  const badge = document.getElementById('reinvest-badge');
+  const card  = document.getElementById('multiyear-card');
+  btn.classList.toggle('active', reinvestOn);
+  badge.textContent    = reinvestOn ? 'On' : 'Off';
+  card.style.display   = reinvestOn ? 'block' : 'none';
+  if (reinvestOn) updateMultiyear(parseInt(document.getElementById('kg-slider').value));
+}
+
+/* ── MASTER UPDATE ──────────────────────────────────────── */
+function update(kg) {
+  kg = parseInt(kg);
+  updateStats(kg);
+  updateCumul(kg);
+  updateMonthTable(kg);
+  updateScenarios(kg);
+  highlightBar(kg);
+  updateScale();
+  if (reinvestOn) updateMultiyear(kg);
+}
+
+/* ── YIELD COMPARISON CHART ─────────────────────────────── */
+function initYieldChart() {
+  const labels = [
+    'Neshes Gold\nProgramme',
+    'S&P 500\n(Total Return)',
+    '60/40\nPortfolio',
+    'IG Corporate\nBonds',
+    'High-Yield\nSavings',
+    'Short-Term\nTreasuries',
+    'S&P 500\n(Dividends)',
+    'Physical Gold\n(No Yield)',
+  ];
+  const yields = [9.0, 9.5, 6.5, 4.85, 4.5, 3.85, 1.2, 0];
+  const colors = yields.map((_, i) => i === 0 ? palette.gold : palette.green + '55');
+  const borders = yields.map((_, i) => i === 0 ? palette.gold : palette.green);
+
+  new Chart(document.getElementById('chart-yield').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Yield / Return %',
+        data: yields,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 500, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...mkTooltip(palette.gold),
+          callbacks: {
+            label: c => '  ' + c.parsed.x.toFixed(1) + '% p.a.' + (c.dataIndex === 0 ? '  ← Fixed & Contractual' : '  (variable / approx.)')
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: palette.border },
+          ticks: { font: { size: 10 }, callback: v => v + '%' },
+          max: 12,
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { size: 10 }, color: '#94A3B8' }
+        }
+      }
+    }
+  });
+}
+
+/* ── INIT ───────────────────────────────────────────────── */
+document.getElementById('kg-slider').addEventListener('input', e => update(e.target.value));
+initCharts();
+initYieldChart();
+update(10);
+loadPrice();
+</script>
+</body>
+</html>
