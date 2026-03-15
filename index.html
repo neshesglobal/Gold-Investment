@@ -496,8 +496,10 @@ input[type=range]::-moz-range-thumb {
   color: var(--text-3);
   text-align: left;
 }
-.yield-table thead th:nth-child(2),
-.yield-table thead th:nth-child(3) { text-align: center; }
+.yield-table thead th:nth-child(2) { text-align: center; }
+.yield-table thead th:nth-child(3),
+.yield-table thead th:nth-child(4),
+.yield-table thead th:nth-child(5) { text-align: left; }
 .yield-table tbody tr {
   border-bottom: 1px solid var(--border);
   transition: background .15s;
@@ -513,19 +515,24 @@ input[type=range]::-moz-range-thumb {
   vertical-align: middle;
 }
 .yield-table td:nth-child(2) { text-align: center; }
-.yield-table td:nth-child(3) { text-align: center; }
+.yield-table td:nth-child(3),
+.yield-table td:nth-child(4),
+.yield-table td:nth-child(5) { text-align: left; }
 .asset-name { font-weight: 500; }
 .asset-name.ours { color: var(--gold); font-weight: 700; }
 .yield-val { font-family: 'Sora', sans-serif; font-weight: 600; }
 .yield-val.ours { color: var(--gold); font-size: 14px; }
-.beat-badge {
+.beat-badge, .risk-badge {
   display: inline-block;
   font-size: 10px; font-weight: 700;
-  padding: 2px 9px; border-radius: 20px;
+  padding: 2px 8px; border-radius: 20px;
+  white-space: nowrap;
 }
 .beat-badge.yes    { background: var(--green-dim);  color: var(--green); }
 .beat-badge.strong { background: rgba(16,185,129,.2); color: var(--green); }
 .beat-badge.us     { background: var(--gold-glow);  color: var(--gold);  border: 1px solid var(--gold-dim); }
+.risk-badge.high   { background: rgba(239,68,68,.12); color: #EF4444; }
+.risk-badge.med    { background: rgba(251,191,36,.12); color: #D97706; }
 .yield-note { font-size: 12px; color: var(--text-2); margin-top: 10px; line-height: 1.7; }
 
 /* ── RISK TABLE ──────────────────────────────────────────── */
@@ -845,62 +852,81 @@ input[type=range]::-moz-range-thumb {
               <tr>
                 <th>Asset Class</th>
                 <th>Typical Yield / Return</th>
-                <th>9% Beats It?</th>
+                <th>Volatility / Downside Risk</th>
+                <th>Liquidity &amp; Cash Flow</th>
+                <th>Neshes Advantage</th>
               </tr>
             </thead>
             <tbody>
               <tr class="highlight-row">
                 <td><span class="asset-name ours">Neshes Gold Programme</span></td>
-                <td><span class="yield-val ours">9.0% p.a.</span></td>
+                <td><span class="yield-val ours">9.0% p.a. Fixed</span></td>
+                <td><span class="beat-badge us">✓ None — Fixed Rate</span></td>
+                <td><span class="beat-badge us">✓ Monthly Cash</span></td>
                 <td><span class="beat-badge us">◉ Our Offer</span></td>
-              </tr>
-              <tr>
-                <td><span class="asset-name">S&amp;P 500 — Dividends Only</span></td>
-                <td><span class="yield-val">~1.2%</span></td>
-                <td><span class="beat-badge strong">✓ Massively</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">S&amp;P 500 — Total Return (3yr avg)</span></td>
                 <td><span class="yield-val">~7%–12% (variable)</span></td>
+                <td><span class="risk-badge high">✗ High — can lose 30–50%</span></td>
+                <td><span class="risk-badge med">~ No fixed income</span></td>
                 <td><span class="beat-badge yes">✓ Risk-Adjusted</span></td>
+              </tr>
+              <tr>
+                <td><span class="asset-name">S&amp;P 500 — Dividends Only</span></td>
+                <td><span class="yield-val">~1.2%</span></td>
+                <td><span class="risk-badge high">✗ High — market-linked</span></td>
+                <td><span class="risk-badge med">~ Quarterly only</span></td>
+                <td><span class="beat-badge strong">✓ Massively</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">Physical Gold (no yield)</span></td>
                 <td><span class="yield-val">0%</span></td>
+                <td><span class="risk-badge med">~ Price volatility</span></td>
+                <td><span class="risk-badge high">✗ No income at all</span></td>
                 <td><span class="beat-badge strong">✓ Massively</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">High-Yield Savings / Money Market</span></td>
                 <td><span class="yield-val">4.0%–5.0%</span></td>
-                <td><span class="beat-badge strong">✓ Strongly</span></td>
+                <td><span class="beat-badge yes">✓ Low</span></td>
+                <td><span class="beat-badge yes">✓ Liquid</span></td>
+                <td><span class="beat-badge strong">✓ Strongly on Yield</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">Short-Term Treasuries / CDs</span></td>
                 <td><span class="yield-val">3.4%–4.3%</span></td>
-                <td><span class="beat-badge strong">✓ Strongly</span></td>
+                <td><span class="beat-badge yes">✓ Very Low</span></td>
+                <td><span class="risk-badge med">~ Locked to maturity</span></td>
+                <td><span class="beat-badge strong">✓ Strongly on Yield</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">IG Corporate Bonds / Treasuries</span></td>
                 <td><span class="yield-val">4.2%–5.5%</span></td>
-                <td><span class="beat-badge yes">✓ Yes</span></td>
+                <td><span class="risk-badge med">~ Duration / rate risk</span></td>
+                <td><span class="risk-badge med">~ Semi-annual coupons</span></td>
+                <td><span class="beat-badge yes">✓ Yes — + Monthly Flow</span></td>
               </tr>
               <tr>
                 <td><span class="asset-name">60/40 Balanced Portfolio</span></td>
                 <td><span class="yield-val">~5%–8% (expected)</span></td>
-                <td><span class="beat-badge yes">✓ Competes Well</span></td>
+                <td><span class="risk-badge med">~ Moderate — correlated</span></td>
+                <td><span class="risk-badge med">~ No fixed distributions</span></td>
+                <td><span class="beat-badge yes">✓ + Certainty of Income</span></td>
               </tr>
             </tbody>
           </table>
-          <div class="yield-note">* Yields shown are approximate current or historical averages. S&amp;P total return is variable and not guaranteed. Neshes 9% is a contractually fixed return — not market-linked.</div>
+          <div class="yield-note">* Yields shown are approximate current or historical averages. S&amp;P 500 total return is variable, historically negative in down years, and carries no guaranteed income. Neshes 9% p.a. is a contractually fixed return — independent of gold price movements, interest rate cycles, or equity markets. Monthly distributions provide predictable cash flow from Day 1.</div>
         </div>
 
         <!-- CHART -->
         <div>
-          <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:12px;">Fixed vs. Variable Returns at a Glance</div>
+          <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:12px;">Yield Comparison — Contractual vs. Variable Returns</div>
           <div style="position:relative;height:300px;"><canvas id="chart-yield"></canvas></div>
-          <div style="margin-top:14px;padding:12px 14px;background:var(--gold-glow);border:1px solid var(--gold-dim);border-radius:var(--radius-sm);">
-            <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">Key Differentiator</div>
-            <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Unlike equity or bond markets, this programme offers a <strong style="color:var(--text-1)">fixed, contractual 9% p.a.</strong> return — independent of gold spot price, interest rate cycles, or equity volatility. You know exactly what you earn from Day 1.</div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text-3);line-height:1.6;">† S&amp;P 500 total return shown at ~9.5% 3-year avg estimate. Actual returns vary: +30% in bull years, −40% in bear years. No guaranteed income. Neshes 9% is fixed and contractual regardless of market conditions.</div>
+          <div style="margin-top:10px;padding:12px 14px;background:var(--gold-glow);border:1px solid var(--gold-dim);border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">Why This Comparison Matters</div>
+            <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Even where S&amp;P 500 total return appears comparable on yield, it comes with <strong style="color:#EF4444">high volatility, no guaranteed income, and no monthly cash flow</strong>. This programme delivers a <strong style="color:var(--text-1)">fixed, contractual 9% p.a.</strong> paid monthly — with physical gold as collateral — from Day 1, regardless of market conditions.</div>
           </div>
         </div>
 
