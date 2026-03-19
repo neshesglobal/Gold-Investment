@@ -1,0 +1,47 @@
+name: Update Gold Price
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # Every hour
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  update-price:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Gold Price
+        run: |
+          # Try metals.live
+          PRICE=$(curl -sf --max-time 10 'https://api.metals.live/v1/spot/gold' | jq -r '.[0].gold // empty' 2>/dev/null)
+
+          # Try backup: Yahoo Finance gold futures (GC=F)
+          if [ -z "$PRICE" ] || [ "$PRICE" = "null" ]; then
+            echo "metals.live failed, trying Yahoo Finance..."
+            PRICE=$(curl -sf --max-time 10 \
+              'https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1d&range=1d' \
+              -H 'User-Agent: Mozilla/5.0' | \
+              jq -r '.chart.result[0].meta.regularMarketPrice // empty' 2>/dev/null)
+          fi
+
+          if [ -z "$PRICE" ] || [ "$PRICE" = "null" ]; then
+            echo "All APIs failed, skipping update."
+            exit 0
+          fi
+
+          mkdir -p data
+          echo "{\"price\": $PRICE, \"updated\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > data/gold-price.json
+          echo "Gold price updated: $PRICE"
+          cat data/gold-price.json
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/gold-price.json
+          git diff --staged --quiet || git commit -m "chore: update gold price [skip ci]"
+          git push
