@@ -1244,14 +1244,21 @@ let reinvestOn = false;
 
 /* ── GOLD PRICE FETCH ───────────────────────────────────── */
 async function tryMetalsLive() {
-  const r = await fetch('https://api.metals.live/v1/spot/gold', { signal: AbortSignal.timeout(4000) });
+  const r = await fetch('https://api.metals.live/v1/spot/gold', { signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw 0;
   const d = await r.json();
   if (Array.isArray(d) && d[0]?.gold) return parseFloat(d[0].gold);
   throw 0;
 }
 async function tryExchangeRate() {
-  const r = await fetch('https://api.exchangerate-api.com/v4/latest/XAU', { signal: AbortSignal.timeout(4000) });
+  const r = await fetch('https://api.exchangerate-api.com/v4/latest/XAU', { signal: AbortSignal.timeout(5000) });
+  if (!r.ok) throw 0;
+  const d = await r.json();
+  if (d.rates?.USD) return parseFloat(d.rates.USD);
+  throw 0;
+}
+async function tryFrankfurter() {
+  const r = await fetch('https://api.frankfurter.app/latest?from=XAU&to=USD', { signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw 0;
   const d = await r.json();
   if (d.rates?.USD) return parseFloat(d.rates.USD);
@@ -1261,18 +1268,20 @@ async function loadPrice() {
   const $oz  = document.getElementById('price-oz');
   const $sub = document.getElementById('price-oz-sub');
   const $kg  = document.getElementById('price-kg');
-  $oz.textContent = '…'; $kg.textContent = '…';
 
-  let oz = FALLBACK;
-  for (const fn of [tryMetalsLive, tryExchangeRate]) {
+  let oz = null;
+  for (const fn of [tryMetalsLive, tryExchangeRate, tryFrankfurter]) {
     try { const p = await fn(); if (p > 1000) { oz = p; break; } } catch(e) {}
   }
+
+  const isLive = oz !== null;
+  if (!isLive) oz = FALLBACK;
 
   spotOz = oz;
   spotKg = oz * OZ_PER_KG;
 
   $oz.textContent  = '$' + oz.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  $sub.textContent = 'USD / troy oz · live';
+  $sub.textContent = isLive ? 'USD / troy oz · live' : 'USD / troy oz · est.';
   $kg.textContent  = '$' + Math.round(spotKg).toLocaleString('en-US');
 
   update(parseInt(document.getElementById('kg-slider').value));
@@ -1568,6 +1577,7 @@ initCharts();
 initYieldChart();
 update(10);
 loadPrice();
+setInterval(loadPrice, 60000);
 </script>
 </body>
 </html>
